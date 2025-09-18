@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thuxu - Doraemon Style</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { height: 100%; font-family: Arial, sans-serif; overflow: hidden; }
+
+    /* Nền Doraemon */
+    body {
+      background: url('https://tse1.mm.bing.net/th/id/OIP.-TxbuHDW9kaUsRpDPUMX7gHaMn?r=0&pid=Api') no-repeat center center/cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      height: 100vh;
+    }
+
+    /* Chữ gradient phát sáng */
+    h1 {
+      font-size: 4em;
+      background: linear-gradient(90deg, #ff512f, #dd2476, #24c6dc, #f093fb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow 3s infinite linear;
+      z-index: 2;
+    }
+
+    @keyframes glow {
+      0% { filter: drop-shadow(0 0 10px #ff512f); }
+      50% { filter: drop-shadow(0 0 20px #24c6dc); }
+      100% { filter: drop-shadow(0 0 10px #dd2476); }
+    }
+
+    p {
+      font-size: 1.5em;
+      margin-top: 10px;
+      text-shadow: 0 0 10px rgba(0,0,0,0.8);
+      z-index: 2;
+    }
+
+    /* Nút neon */
+    .btn {
+      display: inline-block;
+      margin: 20px 10px;
+      padding: 12px 25px;
+      font-size: 1.2em;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #ff6a00, #ee0979);
+      box-shadow: 0 0 15px #ff6a00, 0 0 30px #ee0979;
+      transition: transform 0.3s, box-shadow 0.3s;
+      z-index: 2;
+      position: relative;
+    }
+    .btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 25px #ff6a00, 0 0 50px #ee0979;
+    }
+
+    /* Banner dưới */
+    .banner {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      font-weight: bold;
+      font-size: 1.1em;
+      z-index: 2;
+    }
+
+    /* Canvas cho hiệu ứng sao */
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="stars"></canvas>
+
+  <h1>🌸 Thuxu 🌸</h1>
+  <p>Uy tín tạo nên tất cả</p>
+
+  <a href="https://zalo.me/0869234153" class="btn">Zalo</a>
+  <a href="https://www.facebook.com/share/1FojkDP3zX/" class="btn">Facebook</a>
+
+  <div class="banner">
+    Website by Mr Trung | Zalo: 0869234153
+  </div>
+
+  <script>
+    // Hiệu ứng sao lấp lánh
+    const canvas = document.getElementById("stars");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    let stars = [];
+    const numStars = 150;
+
+    function createStars() {
+      stars = [];
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 2,
+          alpha: Math.random(),
+          speed: 0.002 + Math.random() * 0.002
+        });
+      }
+    }
+
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let star of stars) {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255," + star.alpha + ")";
+        ctx.fill();
+      }
+    }
+
+    function updateStars() {
+      for (let star of stars) {
+        star.alpha += star.speed;
+        if (star.alpha <= 0 || star.alpha >= 1) {
+          star.speed = -star.speed;
+        }
+      }
+    }
+
+    function animate() {
+      drawStars();
+      updateStars();
+      requestAnimationFrame(animate);
+    }
+
+    createStars();
+    animate();
+  </script>
+
+</body>
+</html>

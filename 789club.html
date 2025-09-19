@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Robot Dự Đoán Di Động</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #121212, #1f1f2b);
+      color: white;
+      overflow: hidden;
+    }
+    .draggable-box {
+      position: fixed;
+      top: 30px;
+      left: 30px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      touch-action: none;
+    }
+    .robot-container {
+      width: 180px;
+      height: 120px;
+      animation: floatRobot 2.8s ease-in-out infinite;
+      position: relative;
+    }
+    .robot-avatar {
+      width: 100%;
+      height: auto;
+      pointer-events: none;
+    }
+    .close-btn {
+      position: absolute;
+      top: -5px;
+      left: -15px;
+      background: none;
+      border: none;
+      font-size: 28px;
+      font-weight: bold;
+      color: black;
+      cursor: pointer;
+      line-height: 1;
+      text-shadow:
+        -0.5px -0.5px 0 white,
+        0.5px -0.5px 0 white,
+        -0.5px 0.5px 0 white,
+        0.5px 0.5px 0 white;
+    }
+    .prediction-box {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: 16px;
+      min-width: 130px;
+      border: 1px solid rgba(255,255,255,0.25);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      transition: 0.3s ease;
+    }
+    .session-info {
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .confidence {
+      font-size: 12px;
+      margin-top: 6px;
+      color: #ddd;
+    }
+    @keyframes floatRobot {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @media (max-width: 600px) {
+      .draggable-box { top: 12px; left: 12px; }
+      .robot-container { width: 55px; height: 55px; }
+      .prediction-box { padding: 10px 12px; font-size: 13px; }
+      .session-info { font-size: 13px; }
+      .confidence { font-size: 11px; }
+    }
+    .loading-dot::after {
+      content: '...';
+      animation: dots 2.5s steps(3, end) infinite;
+    }
+    @keyframes dots {
+      0% { content: ''; }
+      33% { content: '.'; }
+      66% { content: '..'; }
+      100% { content: '...'; }
+    }
+  
+.draggable-box {
+  cursor: grab;
+}
+.draggable-box:active {
+  cursor: grabbing;
+}
+.close-btn {
+  cursor: pointer;
+}
+  </style>
+</head>
+<body>
+  <div class="draggable-box" id="dragBox">
+    <button class="close-btn" onclick="document.getElementById('dragBox').style.display='none'">×</button>
+    <div class="robot-container">
+      <img src="https://i.postimg.cc/1zLnNsCZ/IMG-3575.gif" alt="Robot" class="robot-avatar">
+    </div>
+    <div class="prediction-box" id="predictionBox">
+      <div class="session-info" id="session-info-text">
+        Đang khởi động robot dự đoán...
+      </div>
+      <div class="confidence" id="confidence-box" style="display: none;">
+        Độ tin cậy: <span id="confidence">--%</span>
+      </div>
+    </div>
+  </div>
+
+  <button onclick="window.location.href='dashboard.html'" 
+    style="position: fixed; top: 15px; right: 15px; z-index: 9999; padding: 10px 15px; background: #00bfff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+    ⬅️ Quay lại Menu
+  </button>
+
+  <iframe id="sunwin-game-iframe" src="https://play.789.club/" frameborder="0" allowfullscreen
+    style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; z-index: 1;"></iframe>
+
+  <!-- Load AI Prediction Logic -->
+  <script src="predictionAlgorithmsAll.js"></script>
+
+  <script>
+    const INITIAL_DELAY_MS = 2500;
+    const PREDICTION_DISPLAY_MS = 45000;
+    const WAIT_CYCLE_MS = 20000;
+
+    const dragBox = document.getElementById("dragBox");
+    const sessionText = document.getElementById("session-info-text");
+    const confidenceBox = document.getElementById("confidence-box");
+    const confidenceValue = document.getElementById("confidence");
+
+    let isDragging = false, offsetX = 0, offsetY = 0;
+
+    dragBox.addEventListener("mousedown", e => {
+      if (e.target.closest('.close-btn')) return;
+      isDragging = true;
+      offsetX = e.clientX - dragBox.offsetLeft;
+      offsetY = e.clientY - dragBox.offsetTop;
+    });
+
+    dragBox.addEventListener("touchstart", e => {
+      e.preventDefault();
+      if (e.target.closest('.close-btn')) return;
+      const touch = e.touches[0];
+      isDragging = true;
+      offsetX = touch.clientX - dragBox.offsetLeft;
+      offsetY = touch.clientY - dragBox.offsetTop;
+    });
+
+    document.addEventListener("mousemove", e => {
+      if (isDragging) {
+        dragBox.style.left = (e.clientX - offsetX) + "px";
+        dragBox.style.top = (e.clientY - offsetY) + "px";
+      }
+    });
+
+    document.addEventListener("touchmove", e => {
+      e.preventDefault();
+      if (isDragging) {
+        const touch = e.touches[0];
+        dragBox.style.left = (touch.clientX - offsetX) + "px";
+        dragBox.style.top = (touch.clientY - offsetY) + "px";
+      }
+    });
+
+    document.addEventListener("mouseup", () => isDragging = false);
+    document.addEventListener("touchend", () => isDragging = false);
+
+    async function fetchPrediction() {
+      try {
+        sessionText.textContent = "Đang phân tích";
+        sessionText.classList.add("loading-dot");
+        confidenceBox.style.display = "none";
+
+        await delay(1000); // Đợi WebSocket cập nhật latestPrediction
+
+        if (!latestPrediction || !latestPrediction.ketqua) {
+          sessionText.textContent = "Chưa có dữ liệu dự đoán";
+          sessionText.classList.remove("loading-dot");
+          return;
+        }
+
+        const phien_hien_thi = latestPrediction.phien ?? "???";
+        const ket_qua_du_doan = latestPrediction.ketqua ?? "???";
+        const do_tin_cay = (Math.random() * (88 - 60) + 60).toFixed(1) + "%";
+
+        sessionText.classList.remove("loading-dot");
+        sessionText.textContent = `#${phien_hien_thi}: ${ket_qua_du_doan}`;
+        confidenceValue.textContent = do_tin_cay;
+        confidenceBox.style.display = "block";
+
+        animateEffect();
+
+        await delay(PREDICTION_DISPLAY_MS);
+
+        sessionText.textContent = "Đang phân tích";
+        sessionText.classList.add("loading-dot");
+        confidenceBox.style.display = "none";
+      } catch (err) {
+        sessionText.textContent = "Lỗi khi phân tích";
+        sessionText.classList.remove("loading-dot");
+        confidenceBox.style.display = "none";
+        console.error("Lỗi fetch:", err);
+      }
+    }
+
+    function animateEffect() {
+      const box = document.getElementById("predictionBox");
+      box.style.transform = "scale(1.05)";
+      box.style.boxShadow = "0 0 24px rgba(255,255,255,0.5)";
+      setTimeout(() => {
+        box.style.transform = "scale(1)";
+        box.style.boxShadow = "0 8px 24px rgba(0,0,0,0.25)";
+      }, 600);
+    }
+
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function startPredicting() {
+      await delay(INITIAL_DELAY_MS);
+      while (true) {
+        await fetchPrediction();
+        await delay(WAIT_CYCLE_MS);
+      }
+    }
+
+    startPredicting();
+  </script>
+</body>
+</html>

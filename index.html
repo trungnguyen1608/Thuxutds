@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TOOL SMS FREE — MR TRUNG VIP</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f3f6fb;margin:0;padding:24px;display:flex;justify-content:center}
+    .container{width:100%;max-width:980px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.06);overflow:hidden}
+    header{display:flex;flex-direction:column;align-items:stretch}
+    .topline{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:linear-gradient(90deg,#0b6efd,#0658d9);color:#fff}
+    .logo{font-weight:700}
+    .guide-btn{cursor:pointer;background:#fff;color:#0b6efd;font-weight:bold;border-radius:6px;padding:4px 8px}
+    .vip-banner{background:#ffefc9;color:#b35900;font-weight:800;text-align:center;border-top:4px solid #ffd58a;padding:10px;font-size:16px}
+    main{padding:20px}
+    .card{background:#fff;padding:14px;margin-bottom:12px;border-radius:10px;border:1px solid #f1f5f9;box-shadow:0 6px 18px rgba(2,6,23,0.04)}
+    label{display:block;margin-top:10px;font-weight:600}
+    input,textarea,button{width:100%;padding:10px;margin-top:6px;border:1px solid #e6eefb;border-radius:8px;font-size:14px}
+    textarea{resize:none}
+    button.primary{background:#ff6b35;color:#fff;border:0;cursor:pointer;font-weight:800}
+    .tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+    .tabs button{width:auto;padding:8px 12px;border-radius:8px;background:#f3f7ff;border:1px solid #e6efff;cursor:pointer}
+    #btnLogout{background:#f33;color:#fff;display:none}
+    .hidden{display:none}
+    .progress{margin-top:8px;color:#0b6efd;font-weight:bold}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+    th,td{border-bottom:1px solid #eee;padding:6px;text-align:left}
+    .delete-btn{background:#f33;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer}
+    #guideModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999}
+    .guide-box{background:#fff;border-radius:10px;max-width:400px;width:90%;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,0.2)}
+    .close-btn{background:#f33;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;float:right}
+    .highlight{background:#fff6b3;animation:fadeOut 3s forwards}
+    @keyframes fadeOut{0%{background:#fff6b3;}100%{background:transparent;}}
+    .log-count{margin:8px 0;font-weight:bold;color:#0b6efd;}
+  </style>
+</head>
+<body>
+  <audio id="notifySound" src="https://assets.mixkit.co/active_storage/sfx/2561/2561-preview.mp3" preload="auto"></audio>
+
+  <div class="container">
+    <header>
+      <div class="topline">
+        <div class="logo">TOOL SMS FREE</div>
+        <div class="guide-btn" id="openGuide">📖 Hướng dẫn</div>
+      </div>
+      <div class="vip-banner">🏷️ MR TRUNG VIP — Banner</div>
+    </header>
+
+    <main>
+      <div class="card">
+        <div class="tabs">
+          <button id="tabLogin">Đăng nhập</button>
+          <button id="tabRegister">Đăng ký</button>
+          <button id="tabTool" class="hidden">Tool</button>
+          <button id="tabAdmin" class="hidden">Admin</button>
+          <button id="btnLogout">Đăng xuất</button>
+        </div>
+
+        <div id="boxTool" class="hidden">
+          <h3>Gửi SMS</h3>
+          <label>Số điện thoại</label>
+          <input type="tel" id="inputPhone" placeholder="Nhập số điện thoại">
+          <label>Nội dung</label>
+          <textarea id="inputMessage">[MR TRUNG VIP] Đây là tin nhắn!</textarea>
+          <button class="primary" id="btnSend">Gửi</button>
+          <div id="statusArea" class="progress"></div>
+          <div id="countdownBar" style="height:10px;width:100%;background:#eee;border-radius:6px;margin-top:8px;overflow:hidden;display:none;">
+            <div id="countdownFill" style="height:100%;width:100%;background:#0b6efd;transition:width 0.3s linear;"></div>
+          </div>
+        </div>
+
+        <div id="boxLogin">
+          <h3>Đăng nhập</h3>
+          <label>Email</label><input id="loginEmail" type="email">
+          <label>Mật khẩu</label><input id="loginPassword" type="password">
+          <button id="btnLogin" class="primary">Đăng nhập</button>
+        </div>
+
+        <div id="boxRegister" class="hidden">
+          <h3>Đăng ký</h3>
+          <label>Tên</label><input id="regName" type="text">
+          <label>Email</label><input id="regEmail" type="email">
+          <label>Mật khẩu</label><input id="regPassword" type="password">
+          <label>SĐT (tùy chọn)</label><input id="regPhone" type="tel">
+          <button id="btnRegister" class="primary">Đăng ký</button>
+        </div>
+
+        <div id="boxAdmin" class="hidden">
+          <h3>Quản lý Members</h3>
+          <button id="refreshMembers">Tải danh sách</button>
+          <button id="clearPhoneLogs" style="background:#f33;color:#fff;border:none;padding:6px 10px;border-radius:6px;margin-left:6px;cursor:pointer;">
+            🗑️ Xóa log số điện thoại
+          </button>
+          <div id="membersArea" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="guideModal">
+    <div class="guide-box">
+      <button class="close-btn" id="closeGuide">Đã hiểu</button>
+      <h3>📖 Hướng dẫn sử dụng</h3>
+      <p>✅ Đây là công cụ <b>ghi số điện thoại</b> để admin quản lý, không gửi tin thật.</p>
+      <p>⚠️ Chỉ nhập số của bạn, không nhập số tổ chức Nhà nước.</p>
+      <p>💡 Admin có thể xem log số + IP và xóa user.</p>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const show = id => $(id)?.classList.remove('hidden');
+const hide = id => $(id)?.classList.add('hidden');
+
+// ===== Users / Admin mặc định =====
+function getUsers(){ return JSON.parse(localStorage.getItem('users')||'[]'); }
+function saveUsers(u){ localStorage.setItem('users',JSON.stringify(u)); }
+if(!getUsers().some(u=>u.role==='admin')){
+  const u = getUsers();
+  u.push({id:'admin', name:'Admin', email:'admin@example.com', password:'admin123', role:'admin'});
+  saveUsers(u);
+}
+let currentUser=null;
+const tabs={login:'boxLogin', register:'boxRegister', tool:'boxTool', admin:'boxAdmin'};
+
+// ===== Logs (số điện thoại + IP) =====
+function getPhoneLogs(){ return JSON.parse(localStorage.getItem("phoneLogs")||"[]"); }
+function savePhoneLogs(list){ localStorage.setItem("phoneLogs",JSON.stringify(list)); }
+
+function logPhoneForAdmin(phone){
+  // lấy IP công cộng (ipify). Nếu thất bại vẫn lưu "unknown"
+  fetch('https://api.ipify.org?format=json')
+    .then(r=>r.ok ? r.json() : Promise.reject('no'))
+    .then(data=>{
+      const ip = data.ip || "unknown";
+      _savePhoneLog(phone, ip);
+      // thông báo cross-tab (set lại cùng key để storage event ở tab khác kích hoạt)
+      // lưu lại (đã lưu trong _savePhoneLog) — để đảm bảo storage event cho tab khác, ta set 1 khoá đồng thời
+      localStorage.setItem('phoneLogs_lastUpdate', Date.now());
+    })
+    .catch(()=>{ 
+      _savePhoneLog(phone, "unknown");
+      localStorage.setItem('phoneLogs_lastUpdate', Date.now());
+    });
+}
+function _savePhoneLog(phone, ip){
+  let logs = getPhoneLogs();
+  logs.unshift({phone, ip, user: currentUser ? currentUser.email : "Khách", time: new Date().toLocaleString(), highlight:true});
+  if(logs.length>100) logs = logs.slice(0,100);
+  savePhoneLogs(logs);
+  // nếu Admin đang mở admin tab thì load ngay
+  if(currentUser?.role==='admin' && !$('#boxAdmin').classList.contains('hidden')){
+    loadMembers();
+    playNotify();
+    // xóa highlight sau 3s
+    setTimeout(()=>{
+      const ls = getPhoneLogs().map(l=>({...l, highlight:false}));
+      savePhoneLogs(ls);
+      loadMembers();
+    },3000);
+  }
+}
+
+// Hiển thị log
+function renderPhoneLogs(){
+  const logs = getPhoneLogs();
+  if(!logs.length) return "<p>Chưa có số điện thoại nào được ghi</p>";
+  let html=`<div class="log-count">📊 Tổng số log: ${logs.length}</div>`;
+  html+="<h4>📱 Log số điện thoại</h4><table><tr><th>Số ĐT</th><th>IP</th><th>Người gửi</th><th>Thời gian</th></tr>";
+  logs.forEach(l=>{
+    html+=`<tr ${l.highlight?'class="highlight"':''}><td>${l.phone}</td><td>${l.ip||'-'}</td><td>${l.user}</td><td>${l.time}</td></tr>`;
+  });
+  return html+"</table>";
+}
+
+// play notify
+function playNotify(){
+  const audio=$("notifySound");
+  audio.currentTime=0;
+  audio.play().catch(()=>{});
+}
+
+// ===== Tabs =====
+let adminAutoRefreshTimer = null;
+function startAdminAutoRefresh(){
+  if(adminAutoRefreshTimer) return;
+  adminAutoRefreshTimer = setInterval(()=>{
+    if(currentUser?.role==='admin' && !$('#boxAdmin').classList.contains('hidden')){
+      loadMembers();
+    }
+  }, 2000);
+}
+function stopAdminAutoRefresh(){
+  if(adminAutoRefreshTimer){ clearInterval(adminAutoRefreshTimer); adminAutoRefreshTimer = null; }
+}
+
+function openTab(name){
+  Object.values(tabs).forEach(id=>hide(id));
+  if(name==='tool'){
+    // leaving admin -> stop auto refresh
+    stopAdminAutoRefresh();
+    if(!currentUser){ alert('Bạn cần đăng nhập trước khi dùng Tool!'); show(tabs.login); return; }
+    show(tabs.tool);
+  } else if(name==='admin'){
+    if(!currentUser || currentUser.role!=='admin'){ alert('Chỉ Admin'); show(tabs.login); return; }
+    show(tabs.admin); loadMembers(); startAdminAutoRefresh();
+  } else {
+    // leaving admin -> stop auto refresh
+    stopAdminAutoRefresh();
+    show(tabs[name]);
+  }
+}
+$('tabLogin').onclick=()=>openTab('login');
+$('tabRegister').onclick=()=>openTab('register');
+$('tabTool').onclick=()=>openTab('tool');
+$('tabAdmin').onclick=()=>openTab('admin');
+
+// ===== Auth =====
+$('btnRegister').onclick=()=>{
+  const name=$('regName').value.trim(), email=$('regEmail').value.trim(), pass=$('regPassword').value.trim(), phone=$('regPhone').value.trim();
+  if(!name||!email||!pass){ alert('Nhập đủ thông tin'); return; }
+  let users=getUsers();
+  if(users.some(u=>u.email===email)){ alert('Email đã tồn tại'); return; }
+  const newU={id:Date.now()+'', name,email,password:pass,phone,role:'member'};
+  users.push(newU); saveUsers(users);
+  currentUser=newU; localStorage.setItem('currentUserId',newU.id);
+  $('btnLogout').style.display='inline-block'; show('tabTool'); openTab('tool');
+};
+$('btnLogin').onclick=()=>{
+  const email=$('loginEmail').value.trim(), pass=$('loginPassword').value.trim();
+  const users=getUsers(); const user=users.find(u=>u.email===email);
+  if(!user){ alert('Không tìm thấy'); return; }
+  if(user.password!==pass){ alert('Sai mật khẩu'); return; }
+  currentUser=user; localStorage.setItem('currentUserId',user.id);
+  $('btnLogout').style.display='inline-block'; show('tabTool'); if(user.role==='admin') show('tabAdmin'); openTab('tool');
+};
+$('btnLogout').onclick=()=>{ currentUser=null; localStorage.removeItem('currentUserId'); hide('tabTool'); hide('tabAdmin'); $('btnLogout').style.display='none'; stopAdminAutoRefresh(); openTab('login'); };
+
+// ===== Admin load =====
+function loadMembers(){
+  const users=getUsers();
+  let table="";
+  if(users.length===0){
+    table="<p>Chưa có thành viên nào</p>";
+  } else {
+    table='<h4>👥 Thành viên</h4><table><tr><th>Tên</th><th>Email</th><th>Phone</th><th>Role</th><th>Hành động</th></tr>'+
+      users.map(u=>`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.phone||'-'}</td><td>${u.role}</td>
+      <td>${u.role==='admin' ? '—' : `<button class="delete-btn" onclick="deleteUser('${u.id}')">❌</button>`}</td></tr>`).join('')+'</table>';
+  }
+  table+=renderPhoneLogs();
+  $('membersArea').innerHTML=table;
+}
+function deleteUser(id){
+  let users=getUsers();
+  const u = users.find(u=>u.id===id);
+  if(!u) return;
+  if(u.role==='admin'){ alert("❌ Không thể xóa Admin mặc định!"); return; }
+  if(confirm("Bạn có chắc muốn xóa user này?")){
+    users = users.filter(x=>x.id!==id);
+    saveUsers(users);
+    // notify other tabs
+    localStorage.setItem('users_lastUpdate', Date.now());
+    loadMembers();
+    alert("✅ Đã xóa user!");
+  }
+}
+$('refreshMembers').onclick=loadMembers;
+$('clearPhoneLogs').onclick=()=>{ if(!currentUser || currentUser.role!=='admin'){ alert("Chỉ Admin!"); return; } localStorage.removeItem("phoneLogs"); localStorage.setItem('phoneLogs_lastUpdate', Date.now()); loadMembers(); alert("✅ Đã xóa toàn bộ log!"); };
+
+// ===== Nút Gửi với chờ 10s =====
+$('btnSend').onclick=()=>{
+  if(!currentUser){
+    alert("⚠️ Bạn cần đăng nhập trước!");
+    return;
+  }
+  const phone=$('inputPhone').value.trim();
+  if(!phone){
+    $('statusArea').textContent="⚠️ Nhập số điện thoại để gửi!";
+    return;
+  }
+  const regex=/^0\d{9,10}$/;
+  if(!regex.test(phone)){
+    alert("⚠️ Số có thể sai định dạng nhưng vẫn lưu log!");
+  }
+  logPhoneForAdmin(phone);
+  alert("⏳ Vui lòng chờ 10s để tool chạy...");
+  let countdown=10;
+  $('btnSend').disabled=true;
+  $('statusArea').textContent=`⏳ Tool đang chạy... ${countdown}s`;
+  $("countdownBar").style.display="block";
+  const fill = $("countdownFill");
+  fill.style.width = "100%";
+  const timer=setInterval(()=>{
+    countdown--;
+    $('statusArea').textContent=`⏳ Tool đang chạy... ${countdown}s`;
+    fill.style.width = Math.max(0, (countdown/10*100)) + "%";
+    if(countdown<=0){
+      clearInterval(timer);
+      $('btnSend').disabled=false;
+      $('statusArea').textContent="✅ Tool đã chạy xong, có thể gửi tiếp!";
+      alert("✅ Tool đã chạy xong, bạn có thể gửi tiếp!");
+    }
+  },1000);
+};
+
+// ===== Giữ đăng nhập khi reload =====
+window.addEventListener("load", ()=>{
+  const id = localStorage.getItem("currentUserId");
+  if(id){
+    const user = getUsers().find(u=>u.id===id);
+    if(user){
+      currentUser=user;
+      $('btnLogout').style.display='inline-block';
+      show('tabTool');
+      if(user.role==='admin') show('tabAdmin');
+      openTab('tool');
+    }
+  }
+});
+
+// ===== Cross-tab cập nhật (storage event) =====
+window.addEventListener('storage', (ev)=>{
+  // khi phoneLogs hoặc users thay đổi ở tab khác, reload admin view nếu cần
+  if((ev.key && (ev.key.includes('phoneLogs') || ev.key.includes('users'))) && currentUser?.role==='admin'){
+    // small delay để localStorage đã được cập nhật hoàn toàn
+    setTimeout(()=>{ if(!$('#boxAdmin').classList.contains('hidden')) loadMembers(); }, 100);
+  }
+});
+</script>
+</body>
+</html>

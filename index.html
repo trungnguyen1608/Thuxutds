@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TOOL SMS FREE — Demo</title>
+  <style>
+    :root{
+      --accent:#ff6b35;
+      --accent-dark:#e04f1a;
+      --primary:#0b6efd;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --glass: rgba(255,255,255,0.18);
+      --glass-2: rgba(255,255,255,0.08);
+      --radius:14px;
+      --shadow: 0 8px 30px rgba(11, 26, 60, 0.12);
+      --success: #16a34a;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-font-smoothing:antialiased;
+      background: linear-gradient(135deg,#f0f7ff 0%, #f7fff2 100%);
+      display:flex;
+      align-items: center;
+      justify-content: center;
+      padding:32px;
+      color:#0f172a;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:980px;
+      border-radius:18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.90), rgba(250,250,255,0.88));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      border: 1px solid rgba(15,23,42,0.05);
+    }
+
+    header.top {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 20px;
+      background: linear-gradient(90deg, rgba(11,110,253,0.95), rgba(6,78,217,0.95));
+      color:white;
+      gap:12px;
+    }
+    header.top .left {
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    header.top .logo {
+      width:42px;height:42px;border-radius:10px;
+      background:linear-gradient(135deg,#fff3f0,#ffecdd);
+      color:var(--accent);
+      display:grid;place-items:center;font-weight:700;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+    header.top .title { font-weight:700; font-size:15px; }
+    header.top .zalo {
+      background: rgba(255,255,255,0.14);
+      padding:8px 12px;border-radius:10px;font-weight:600;
+      display:flex;gap:8px;align-items:center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .hero {
+      padding:34px 28px;
+      display:flex;
+      gap:28px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .banner {
+      flex:1 1 360px;
+      border-radius:var(--radius);
+      padding:28px;
+      background: linear-gradient(135deg,#06d6a0,#118ab2);
+      color:white;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.08);
+    }
+    .banner h1{
+      margin:0 0 10px 0;
+      font-size:28px;
+      letter-spacing:0.6px;
+    }
+    .banner p{ margin:0; opacity:0.95; color:rgba(255,255,255,0.92) }
+
+    .card {
+      flex:0 1 420px;
+      background:var(--card);
+      border-radius:14px;
+      padding:18px;
+      box-shadow: 0 8px 20px rgba(2,6,23,0.06);
+      border:1px solid rgba(11,26,60,0.04);
+    }
+
+    label{ display:block; font-size:13px; color:var(--muted); margin-bottom:8px; font-weight:600 }
+    input[type="tel"], textarea{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid rgba(11,26,60,0.08);
+      outline:none;
+      font-size:15px;
+      resize:vertical;
+      background:linear-gradient(180deg, #fff, #fbfdff);
+    }
+    input[type="tel"]::placeholder, textarea::placeholder{ color:#9aa3b2 }
+
+    .row{ display:flex; gap:12px; margin-top:12px; align-items:center }
+    .small { font-size:13px; color:var(--muted) }
+
+    .btn {
+      appearance:none;
+      border:0;
+      background: linear-gradient(180deg,var(--accent), var(--accent-dark));
+      color:white;
+      padding:12px 18px;
+      border-radius:10px;
+      font-weight:800;
+      cursor:pointer;
+      font-size:15px;
+      box-shadow: 0 8px 20px rgba(255,107,53,0.18);
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s;
+    }
+    .btn:active{ transform:translateY(1px) }
+    .btn[disabled]{ opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none }
+
+    .status {
+      margin-top:14px;
+      padding:10px 12px;
+      border-radius:10px;
+      font-weight:600;
+      display:none;
+      align-items:center;
+      gap:10px;
+    }
+    .status.show{ display:flex }
+    .spinner {
+      width:18px;height:18px;border-radius:50%;
+      border:3px solid rgba(0,0,0,0.06);
+      border-top-color:var(--accent);
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .success { background: rgba(22,163,74,0.12); color:var(--success); border:1px solid rgba(22,163,74,0.12) }
+    .error { background: rgba(255,69,58,0.08); color:#b91c1c; border:1px solid rgba(189,39,30,0.06) }
+
+    .meta { margin-top:18px; font-size:13px; color:var(--muted) }
+
+    footer{
+      padding:14px 20px;
+      background:var(--glass-2);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    /* responsive */
+    @media (max-width:760px){
+      .hero{ padding:20px }
+      .banner{ order:2 }
+      .card{ order:1; width:100% }
+      header.top { flex-direction:column; gap:8px; align-items:flex-start }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" role="main">
+    <header class="top" role="banner">
+      <div class="left">
+        <div class="logo">SMS</div>
+        <div>
+          <div class="title">Tool SMS Free — Demo</div>
+          <div style="font-size:12px; color: rgba(255,255,255,0.85)">Giao diện demo — không gửi SMS thật</div>
+        </div>
+      </div>
+
+      <div class="zalo" aria-hidden="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="transform:translateY(1px)">
+          <path d="M12 2C6.48 2 2 6.06 2 10.7c0 2.97 1.77 5.65 4.58 7.18L6 22l4.63-2.09C12.2 20 12.59 20 12.98 20c5.52 0 10-4.06 10-8.7S17.52 2 12 2z" fill="#fff"/>
+        </svg>
+        <div style="font-weight:700">Zalo Admin</div>
+        <div style="opacity:0.95; font-weight:700; padding-left:8px">0869234153</div>
+      </div>
+    </header>
+
+    <section class="hero" aria-label="main content">
+      <div class="banner" aria-hidden="true">
+        <h1>TOOL SMS FREE</h1>
+        <p>Giao diện công cụ gửi SMS (demo). Để tránh lạm dụng, tính năng gửi thực tế đã được tắt — đây là bản nhìn trước giao diện.</p>
+      </div>
+
+      <aside class="card" aria-labelledby="form-title">
+        <h3 id="form-title" style="margin:0 0 10px 0">Gửi SMS (Demo)</h3>
+
+        <label for="phone">Số điện thoại</label>
+        <input id="phone" type="tel" inputmode="numeric" placeholder="Ví dụ: 0899123456" maxlength="15" pattern="[0-9]*" />
+
+        <label for="message" style="margin-top:12px">Nội dung tin nhắn</label>
+        <textarea id="message" rows="4" placeholder="Nhập nội dung (demo) — không gửi thật"></textarea>
+
+        <div class="row" style="margin-top:14px">
+          <button id="sendBtn" class="btn" aria-live="polite">Gửi (Demo)</button>
+          <button id="copyBtn" class="btn" style="background:#0ea5a4; box-shadow: 0 8px 20px rgba(14,165,164,0.15);">Sao chép nội dung</button>
+        </div>
+
+        <div id="status" class="status" role="status" aria-atomic="true" style="margin-top:12px"></div>
+
+        <div class="meta">
+          <div><strong>Lưu ý:</strong> Đây là bản demo giao diện. Mọi thao tác chỉ chạy trên trình duyệt, <em>không gửi sms thật</em>.</div>
+        </div>
+      </aside>
+    </section>
+
+    <footer>
+      <div>© 2025 Tool SMS Free — Demo</div>
+      <div style="font-weight:700">Zalo: 0869234153</div>
+    </footer>
+  </div>
+
+  <script>
+    // Demo-only: không gửi request ra server
+    const phoneEl = document.getElementById('phone');
+    const msgEl = document.getElementById('message');
+    const sendBtn = document.getElementById('sendBtn');
+    const statusEl = document.getElementById('status');
+    const copyBtn = document.getElementById('copyBtn');
+
+    function showStatus(type, text) {
+      statusEl.className = 'status show ' + (type === 'ok' ? 'success' : 'error');
+      statusEl.innerHTML = (type === 'ok'
+        ? '<div class="spinner" aria-hidden="true"></div><div>' + text + '</div>'
+        : '<div style="width:18px"></div><div>' + text + '</div>');
+    }
+
+    function hideStatus() {
+      statusEl.className = 'status';
+      statusEl.innerHTML = '';
+    }
+
+    function validPhone(p){
+      // simple viettel/09/08 style check (very permissive)
+      const digits = p.replace(/\D/g,'');
+      return digits.length >= 9 && digits.length <= 12;
+    }
+
+    sendBtn.addEventListener('click', function(){
+      const phone = phoneEl.value.trim();
+      const msg = msgEl.value.trim();
+
+      if(!validPhone(phone)){
+        showStatus('err','Số điện thoại không hợp lệ. Vui lòng kiểm tra.');
+        setTimeout(hideStatus, 3000);
+        return;
+      }
+      if(msg.length < 3){
+        showStatus('err','Nội dung quá ngắn.');
+        setTimeout(hideStatus, 2500);
+        return;
+      }
+
+      // Simulate sending progress (demo)
+      sendBtn.disabled = true;
+      showStatus('ok','Đang giả lập gửi...');
+
+      // fake progress timeline
+      setTimeout(()=> {
+        statusEl.innerHTML = '<div style="width:18px;height:18px;border-radius:50%;border:3px solid rgba(0,0,0,0.06);border-top-color:var(--accent);animation:spin 1s linear infinite"></div><div>Đã gửi (demo) tới: ' + phone + '</div>';
+        // show final success
+        setTimeout(()=> {
+          statusEl.className = 'status show success';
+          statusEl.innerHTML = '✅ Demo thành công — tin nhắn không được gửi thật.';
+          sendBtn.disabled = false;
+          setTimeout(hideStatus, 5000);
+        }, 1000);
+      }, 1400);
+    });
+
+    copyBtn.addEventListener('click', function(){
+      const txt = msgEl.value || ('Demo gửi SMS tới ' + (phoneEl.value||'[số]'));
+      navigator.clipboard?.writeText(txt).then(()=> {
+        showStatus('ok', 'Nội dung đã sao chép vào clipboard.');
+        setTimeout(hideStatus, 1800);
+      }).catch(()=> {
+        showStatus('err','Không thể sao chép. Vui lòng copy thủ công.');
+        setTimeout(hideStatus, 2000);
+      });
+    });
+
+    // Accessibility: clear status on input
+    [phoneEl, msgEl].forEach(el => el.addEventListener('input', ()=> {
+      hideStatus();
+    }));
+  </script>
+</body>
+</html>

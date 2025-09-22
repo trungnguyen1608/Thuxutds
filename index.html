@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Rate & Xu Member</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    table { border-collapse: collapse; width: 80%; margin-bottom: 20px; }
+    th, td { border: 1px solid #999; padding: 8px; text-align: center; }
+    th { background: #f0f0f0; }
+    tfoot td { font-weight: bold; background: #e8e8e8; }
+  </style>
+</head>
+<body>
+  <h1>📊 Bảng Rate & Xu Member</h1>
+
+  <h2>💳 Tài khoản Traodoisub</h2>
+  <table id="tdsTable">
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Tên User</th>
+        <th>Số Xu</th>
+        <th>Giá trị (VNĐ)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2">Tổng cộng</td>
+        <td id="totalXu">0</td>
+        <td id="totalVND">0</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <h2>💰 Rate hệ thống</h2>
+  <table id="rateTable">
+    <tr><th>Hệ thống</th><th>Rate (VNĐ/1k xu)</th></tr>
+  </table>
+
+  <h2>👤 Xu của Member (local)</h2>
+  <table id="memberTable">
+    <tr><th>Member</th><th>Số xu</th></tr>
+  </table>
+
+<script>
+// ⚠️ Nhập danh sách token Traodoisub ở đây
+const TDS_TOKENS = [
+  "TOKEN_ACC_1",
+  "TOKEN_ACC_2",
+  "TOKEN_ACC_3"
+];
+
+// Dữ liệu tĩnh (rate + member)
+const localData = {
+  "rate": {
+    "traodoisub": 9.5, // VNĐ cho 1 xu (9.5k / 1000 xu)
+    "tuongtaccheo": 10.0
+  },
+  "members": [
+    { "name": "Nampro", "xu": 900 },
+    { "name": "HàLinh", "xu": 1200 }
+  ]
+};
+
+// Load nhiều account TDS + tính tổng xu + VNĐ
+async function loadMultiProfile() {
+  const tbody = document.querySelector("#tdsTable tbody");
+  let index = 1;
+  let totalXu = 0;
+  let totalVND = 0;
+  const rate = localData.rate.traodoisub; // lấy rate mặc định TDS
+
+  for (const token of TDS_TOKENS) {
+    const url = `https://traodoisub.com/api/?fields=profile&access_token=${token}`;
+    try {
+      const resp = await fetch(url);
+      const obj = await resp.json();
+
+      if (obj.success === 200 && obj.data) {
+        const profile = obj.data;
+        const xu = profile.xu || 0;
+        const vnd = Math.round((xu / 1000) * rate * 1000); // tính VNĐ
+
+        totalXu += xu;
+        totalVND += vnd;
+
+        let row = `<tr>
+          <td>${index++}</td>
+          <td>${profile.user || profile.username || profile.name || "N/A"}</td>
+          <td>${xu}</td>
+          <td>${vnd.toLocaleString()} đ</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      } else {
+        let row = `<tr>
+          <td>${index++}</td>
+          <td>Lỗi token/API</td>
+          <td>-</td>
+          <td>-</td>
+        </tr>`;
+        tbody.innerHTML += row;
+        console.error("API lỗi:", obj);
+      }
+    } catch (err) {
+      let row = `<tr>
+        <td>${index++}</td>
+        <td>Lỗi fetch</td>
+        <td>-</td>
+        <td>-</td>
+      </tr>`;
+      tbody.innerHTML += row;
+      console.error("Không fetch được profile:", err);
+    }
+  }
+
+  // cập nhật tổng xu + VNĐ
+  document.getElementById("totalXu").innerText = totalXu;
+  document.getElementById("totalVND").innerText = totalVND.toLocaleString() + " đ";
+}
+
+function loadLocalData() {
+  // Hiển thị rate
+  const rateTable = document.getElementById("rateTable");
+  for (let key in localData.rate) {
+    let row = `<tr><td>${key}</td><td>${localData.rate[key]}k / 1k xu</td></tr>`;
+    rateTable.innerHTML += row;
+  }
+
+  // Hiển thị member
+  const memberTable = document.getElementById("memberTable");
+  localData.members.forEach(member => {
+    let row = `<tr><td>${member.name}</td><td>${member.xu}</td></tr>`;
+    memberTable.innerHTML += row;
+  });
+}
+
+// Gọi khi load trang
+window.onload = function() {
+  loadMultiProfile();
+  loadLocalData();
+}
+</script>
+</body>
+</html>

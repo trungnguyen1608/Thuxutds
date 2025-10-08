@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Proxy Sống HTTP/HTTPS | TRUNGDZVCL =nhóm Zalo https://zalo.me/g/gnjink053 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #181c22; color: #e2e5ed; font-family: 'Be Vietnam Pro', Arial, sans-serif; }
+        .main-card { background: rgba(28,32,39,0.97); border-radius: 18px; box-shadow: 0 10px 32px #1e285029, 0 2px 8px #0002; }
+        .form-label { font-weight: 600; color: #8ab4f8; }
+        .btn-gradient { background: linear-gradient(90deg, #005bea 0%, #3a8dde 100%); color: #fff; font-weight: 700; border: none; }
+        .btn-gradient:hover { background: linear-gradient(90deg, #3a8dde 0%, #005bea 100%); color: #fff; }
+        .table-dark { --bs-table-bg: #181c22; --bs-table-striped-bg: #23272f; --bs-table-hover-bg: #21252b; color: #b5d3ff; }
+        .table thead th { background: #202635; color: #8ab4f8; border: none; }
+        .badge-live { background: #25d366; font-size: 13px; }
+        .fade-in { animation: fadeIn .7s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: none;} }
+        .copy-alert { position: fixed; top: 30px; right: 30px; z-index: 9999; }
+        .footer-dark { color: #8ab4f8; opacity: 0.7; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="main-card p-4 mx-auto" style="max-width:900px;">
+            <h2 class="fw-bold mb-4 text-center" style="color:#8ab4f8;">Proxy Sống <span class="badge bg-info text-dark">SIÊU NGON</span></h2>
+            <form class="row g-3 justify-content-center mb-4" id="proxyForm" autocomplete="off">
+                <div class="col-auto">
+                    <label for="proxyNumber" class="form-label mb-1">Nhập số lượng proxy (vô cực):</label>
+                    <input type="number" class="form-control" id="proxyNumber" min="1" max="100000" value="1000" required>
+                </div>
+                <div class="col-auto align-self-end">
+                    <button class="btn btn-gradient px-4" type="submit">Tạo Proxy</button>
+                </div>
+                <div class="col-auto align-self-end">
+                    <button type="button" class="btn btn-success px-4" id="copyBtn">Sao chép danh sách proxy</button>
+                </div>
+            </form>
+            <div id="infoMessage" class="mb-3"></div>
+            <div id="proxyTableContainer"></div>
+        </div>
+        <footer class="footer-dark text-center mt-5">© 2025 Proxy Generator. Thiết kế bởi <b>TIENDEV</b></footer>
+    </div>
+    <div class="copy-alert" style="display:none;">
+        <div class="alert alert-success mb-0 py-2 px-4">
+            Đã sao chép danh sách proxy vào clipboard!
+        </div>
+    </div>
+    <script>
+    const apiList = [
+        // ProxyScrape HTTP
+        {
+            name: "ProxyScrape HTTP",
+            url: "https://api.proxyscrape.com/v2/?request=getproxies&protocol=http&timeout=3000&country=all&ssl=all&anonymity=all",
+            parse: txt => txt.split('\n').map(x => x.trim()).filter(x => x).map(proxy => ({
+                url: `http://${proxy}`,
+                ip: proxy.split(':')[0],
+                port: proxy.split(':')[1] || '',
+                type: 'HTTP'
+            }))
+        },
+        // ProxyScrape HTTPS
+        {
+            name: "ProxyScrape HTTPS",
+            url: "https://api.proxyscrape.com/v2/?request=getproxies&protocol=https&timeout=3000&country=all&ssl=all&anonymity=all",
+            parse: txt => txt.split('\n').map(x => x.trim()).filter(x => x).map(proxy => ({
+                url: `https://${proxy}`,
+                ip: proxy.split(':')[0],
+                port: proxy.split(':')[1] || '',
+                type: 'HTTPS'
+            }))
+        },
+        // Geonode API (JSON)
+        {
+            name: "Geonode API",
+            url: "https://proxylist.geonode.com/api/proxy-list?limit=50000&page=1&sort_by=lastChecked&sort_type=desc",
+            isJson: true,
+            parse: json => {
+                if (!json.data) return [];
+                return json.data
+                    .filter(p => Array.isArray(p.protocols) && (p.protocols.includes("http") || p.protocols.includes("https")))
+                    .map(p => {
+                        let type = p.protocols.includes("https") ? "HTTPS" : "HTTP";
+                        let url = `${type.toLowerCase()}://${p.ip}:${p.port}`;
+                        return { url, ip: p.ip, port: p.port, type }
+                    });
+            }
+        },
+        // OpenProxySpace HTTP
+        {
+            name: "OpenProxySpace HTTP",
+            url: "https://openproxy.space/list/http",
+            parse: txt => txt.split('\n').map(x => x.trim()).filter(x => x).map(proxy => ({
+                url: `http://${proxy}`,
+                ip: proxy.split(':')[0],
+                port: proxy.split(':')[1] || '',
+                type: 'HTTP'
+            }))
+        },
+        // OpenProxySpace HTTPS
+        {
+            name: "OpenProxySpace HTTPS",
+            url: "https://openproxy.space/list/https",
+            parse: txt => txt.split('\n').map(x => x.trim()).filter(x => x).map(proxy => ({
+                url: `https://${proxy}`,
+                ip: proxy.split(':')[0],
+                port: proxy.split(':')[1] || '',
+                type: 'HTTPS'
+            }))
+        },
+        // Proxy-List (GitHub)
+        {
+            name: "Proxy-List GitHub HTTP",
+            url: "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
+            parse: txt => txt.split('\n').map(x => x.trim()).filter(x => x).map(proxy => ({
+                url: `http://${proxy}`,
+                ip: proxy.split(':')[0],
+                port: proxy.split(':')[1] || '',
+                type: 'HTTP'
+            }))
+        },
+        {
+            name: "Proxy-List GitHub HTTPS",
+            url: "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/https.txt",
+            parse: txt => txt.split('\n').map(x => x.trim()).filter(x => x).map(proxy => ({
+                url: `https://${proxy}`,
+                ip: proxy.split(':')[0],
+                port: proxy.split(':')[1] || '',
+                type: 'HTTPS'
+            }))
+        },
+        // ProxyListDownload
+        {
+            name: "ProxyListDownload HTTPS",
+            url: "https://www.proxy-list.download/api/v1/get?type=https",
+            parse: txt => txt.split('\n').map(x => x.trim()).filter(x => x).map(proxy => ({
+                url: `https://${proxy}`,
+                ip: proxy.split(':')[0],
+                port: proxy.split(':')[1] || '',
+                type: 'HTTPS'
+            }))
+        },
+        {
+            name: "ProxyListDownload HTTP",
+            url: "https://www.proxy-list.download/api/v1/get?type=http",
+            parse: txt => txt.split('\n').map(x => x.trim()).filter(x => x).map(proxy => ({
+                url: `http://${proxy}`,
+                ip: proxy.split(':')[0],
+                port: proxy.split(':')[1] || '',
+                type: 'HTTP'
+            }))
+        }
+    ];
+
+    async function fetchProxyFromApi(api) {
+        try {
+            let resp = await fetch(api.url);
+            if (api.isJson) {
+                let json = await resp.json();
+                return api.parse(json);
+            } else {
+                let txt = await resp.text();
+                return api.parse(txt);
+            }
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async function fetchAllProxies(limit) {
+        document.getElementById('infoMessage').innerHTML = "Đang lấy proxy từ nhiều API, vui lòng chờ...";
+        let allProxies = [];
+        let fetches = apiList.map(api => fetchProxyFromApi(api));
+        let results = await Promise.all(fetches);
+        results.forEach(arr => allProxies = allProxies.concat(arr));
+        // Loại trùng (theo type+ip:port)
+        let unique = {};
+        let proxiesHttps = [], proxiesHttp = [];
+        for (let p of allProxies) {
+            if (!p.ip || !p.port || !p.url) continue;
+            let key = p.type + p.ip + ":" + p.port;
+            if (!unique[key]) {
+                if (p.type === "HTTPS") proxiesHttps.push({...p, status: "LIVE"});
+                if (p.type === "HTTP")  proxiesHttp.push({...p, status: "LIVE"});
+                unique[key] = true;
+            }
+        }
+        // Ưu tiên HTTPS, sau đó HTTP cho đủ số lượng
+        let proxies = proxiesHttps.slice(0, limit);
+        if (proxies.length < limit) {
+            proxies = proxies.concat(proxiesHttp.slice(0, limit - proxies.length));
+        }
+        document.getElementById('infoMessage').innerHTML =
+            `<span style="color:#25d366">Tìm được ${proxies.length} proxy (${proxiesHttps.length} HTTPS, ${proxiesHttp.length} HTTP), chờ 15-20 phút tạo proxy 1 lần</span>`;
+        return proxies;
+    }
+
+    function renderProxyTable(proxyArr) {
+        let html = `
+        <div class="table-responsive fade-in">
+        <table class="table table-dark table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>IP</th>
+                    <th>Port</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        proxyArr.forEach((p, idx) => {
+            html += `
+            <tr>
+                <td>${idx+1}</td>
+                <td><code>${p.ip}</code></td>
+                <td><b>${p.port}</b></td>
+                <td><span class="badge bg-primary">${p.type}</span></td>
+                <td><span class="badge badge-live">LIVE</span></td>
+                <td><code style="font-size:0.97em;">${p.url}</code></td>
+            </tr>
+            `;
+        });
+        html += `</tbody></table></div>
+        <div class="mt-2 text-end text-secondary" style="font-size:1em">
+            Tổng số proxy: <b>${proxyArr.length}</b>
+        </div>`;
+        document.getElementById('proxyTableContainer').innerHTML = html;
+    }
+
+    // Xử lý submit
+    document.getElementById('proxyForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const n = Math.max(1, Math.min(50000, parseInt(document.getElementById('proxyNumber').value)));
+        const arr = await fetchAllProxies(n);
+        renderProxyTable(arr);
+        window.currentProxyList = arr.map(p => p.url);
+    });
+
+    // Xử lý sao chép danh sách proxy
+    document.getElementById('copyBtn').addEventListener('click', function() {
+        const listToCopy = (window.currentProxyList || []).join('\n');
+        if(!listToCopy) return;
+        navigator.clipboard.writeText(listToCopy).then(() => {
+            document.querySelector('.copy-alert').style.display = 'block';
+            setTimeout(() => {
+                document.querySelector('.copy-alert').style.display = 'none';
+            }, 1500);
+        });
+    });
+
+    // Render mặc định lúc vào trang
+    window.onload = async function() {
+        const arr = await fetchAllProxies(1000);
+        renderProxyTable(arr);
+        window.currentProxyList = arr.map(p => p.url);
+    };
+    </script>
+</body>
+</html>

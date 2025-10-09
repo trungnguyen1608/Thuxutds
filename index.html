@@ -1,0 +1,49 @@
+<body>
+  <h1>🔑 Hệ thống Key Link4m</h1>
+
+  <div id="gate" class="card">
+    <p><b>Nhập admin key để xem:</b></p>
+    <input id="pass" type="password" placeholder="Admin key (vd: nntsuong)" />
+    <button onclick="unlock()">Mở khóa</button>
+    <p id="msg" style="color:#f87171"></p>
+  </div>
+
+  <div id="content" class="card" style="display:none;">Đang tải…</div>
+
+  <script>
+    const ADMIN_PASS = "nntsuong"; // bạn có thể đổi
+
+    async function unlock() {
+      const p = document.getElementById('pass').value.trim();
+      if (p !== ADMIN_PASS) {
+        document.getElementById('msg').textContent = "Sai admin key!";
+        return;
+      }
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+      loadKeys();
+    }
+
+    async function loadKeys() {
+      try {
+        const resp = await fetch("keys.json?_=" + Date.now());
+        const data = await resp.json();
+
+        if (data.maintenance) {
+          document.getElementById("content").innerHTML =
+            `🚧 ${data.message || "Trang đang bảo trì."}`;
+          return;
+        }
+
+        const key24 = data.key_24h?.token || "Chưa có";
+        const perm = (data.permanent || []).join("<br>");
+        document.getElementById("content").innerHTML =
+          `<h3>Admin: nntsuong</h3>
+           <p><b>Key 24h:</b> ${key24}</p>
+           <p><b>Permanent Keys:</b><br>${perm}</p>`;
+      } catch (e) {
+        document.getElementById("content").textContent = "Lỗi tải keys.json: " + e;
+      }
+    }
+  </script>
+</body>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Link4m Key Dashboard</title>
+  <style>
+    body { background: #111; color: #fff; font-family: Arial; text-align: center; padding: 40px; }
+    .card { background: #222; padding: 20px; border-radius: 12px; margin: 20px auto; max-width: 400px; }
+    .expired { color: #f87171; }
+    .valid { color: #22c55e; }
+  </style>
+</head>
+<body>
+  <h1>🔑 Hệ thống Key Link4m</h1>
+  <div id="content">Đang tải …</div>
+
+  <script>
+    async function loadKeys() {
+      try {
+        const resp = await fetch("keys.json?_=" + Date.now());
+        const data = await resp.json();
+        const el = document.getElementById("content");
+        if (data.maintenance) {
+          el.innerHTML = `<div style="color:#ff5757;">🚧 ${data.message || "Trang đang bảo trì."}</div>`;
+          return;
+        }
+        let html = `<div class="card"><h3>Admin Key: nntsuong</h3>`;
+        html += `<p>Key 24h: ${data.key_24h?.token || "Chưa có"}</p>`;
+        html += `<p>Permanent Keys:<br>${(data.permanent||[]).join("<br>")}</p>`;
+        html += `</div>`;
+        el.innerHTML = html;
+      } catch (e) {
+        document.getElementById("content").innerHTML = `Lỗi tải keys.json: ${e}`;
+      }
+    }
+    loadKeys();
+  </script>
+</body>
+</html>

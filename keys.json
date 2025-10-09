@@ -1,0 +1,14 @@
+{
+  "maintenance": false,
+  "admin_key": "nntsuong",
+  "message": "🚧 Trang đang bảo trì bởi Admin Nguyễn Lương Trung bá vũ trụ.",
+  "permanent": [
+    "6662c49ff6fcae4afb096fa0",
+    "6735824c053a2305d93aa2d9",
+    "68e52b0463daba5e59102088"
+  ],
+  "key_24h": {
+    "token": "8b9f5ce2a47a1e8c3b6f2d5a7b4e9f6c",
+    "created_at": 1728559000
+  }
+}
